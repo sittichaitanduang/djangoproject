@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ultra Fruit One Screen</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        margin: 0;
+        font-family: "Poppins", sans-serif;
+        background: black;
+        color: white;
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 0;
+      }
+
+      .container-main {
+        position: relative;
+        z-index: 1;
+        width: 95%;
+        max-width: 1200px;
+      }
+
+      .glass {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(20px);
+        border-radius: 25px;
+        padding: 30px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        height: 100%;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(90deg, #fff, #ffcc00, #fff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .item {
+        padding: 10px;
+        margin: 5px 0;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.1);
+        transition: 0.3s;
+      }
+
+      .item:hover {
+        transform: scale(1.05);
+        background: rgba(255, 255, 255, 0.25);
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="bg"></canvas>
+
+    <div class="container-main">
+      <div class="row g-4">
+        <div class="col-md-6">
+          <div class="glass h-100">
+            <h1>🍉 NEXT LEVEL FRUIT</h1>
+            <p>ประสบการณ์ผลไม้ระดับพรีเมียม</p>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="glass h-100">
+            <h2>✨ Story</h2>
+            <p>เราส่งต่อความสดจากสวนถึงมือคุณ</p>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="glass h-100">
+            <h2>🔥 Products</h2>
+            <div class="item">🥭 Mango Ultra Sweet</div>
+            <div class="item">🍉 Watermelon Fresh</div>
+            <div class="item">🍍 Pineapple Gold</div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="glass h-100">
+            <h2>📞 Contact</h2>
+            <p>08X-XXX-XXXX</p>
+            <p>ตลาดใกล้บ้านคุณ</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("bg");
+      const ctx = canvas.getContext("2d");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      let particles = [];
+
+      class Particle {
+        constructor() {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.vx = Math.random() * 1 - 0.5;
+          this.vy = Math.random() * 1 - 0.5;
+        }
+
+        move() {
+          this.x += this.vx;
+          this.y += this.vy;
+
+          if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+          if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+        }
+
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+          ctx.fillStyle = "white";
+          ctx.fill();
+        }
+      }
+
+      function init() {
+        particles = [];
+        for (let i = 0; i < 100; i++) {
+          particles.push(new Particle());
+        }
+      }
+
+      function connect() {
+        for (let a = 0; a < particles.length; a++) {
+          for (let b = a; b < particles.length; b++) {
+            let dx = particles[a].x - particles[b].x;
+            let dy = particles[a].y - particles[b].y;
+            let dist = dx * dx + dy * dy;
+
+            if (dist < 9000) {
+              ctx.strokeStyle = "rgba(255,255,255,0.08)";
+              ctx.beginPath();
+              ctx.moveTo(particles[a].x, particles[a].y);
+              ctx.lineTo(particles[b].x, particles[b].y);
+              ctx.stroke();
+            }
+          }
+        }
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        particles.forEach((p) => {
+          p.move();
+          p.draw();
+        });
+
+        connect();
+        requestAnimationFrame(animate);
+      }
+
+      init();
+      animate();
+
+      window.addEventListener("resize", () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        init();
+      });
+    </script>
+  </body>
+</html>
