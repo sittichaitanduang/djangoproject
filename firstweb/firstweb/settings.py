@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'myapp',
+    'shop'
 ]
 
 MIDDLEWARE = [
@@ -136,5 +137,4 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'static'
 MEDIA_URL = '/media/'
 
-import os
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
