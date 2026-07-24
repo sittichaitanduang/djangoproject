@@ -1,26 +1,59 @@
-from urllib import request
+from django.contrib import messages
+from django.contrib.auth import login as auth_login
+from django.contrib.auth import logout as auth_logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm
+from django.shortcuts import get_object_or_404, redirect, render
+from shop.models import Brand, Category, Product as ShopProduct
 
-from django.shortcuts import get_object_or_404, render
-from django.http import HttpResponse
-from .models import *
+from .forms import UserRegisterForm
+from .models import Profile
 
 
 # Create your views here.
 def Home(request):
     return render(request, 'home.html')
 
+
 def About(request):
     return render(request, 'about.html')
 
+
 def AllProducts(request):
-    products = Product.objects.all()
-    context = {"products": products}
+    query = request.GET.get('q', '').strip()
+    category_id = request.GET.get('category', '')
+    sort_by = request.GET.get('sort', 'name')
+
+    products = ShopProduct.objects.select_related('brand', 'category')
+
+    if query:
+        products = products.filter(name__icontains=query)
+
+    if category_id:
+        products = products.filter(category_id=category_id)
+
+    if sort_by == 'price_low_to_high':
+        products = products.order_by('price', 'name')
+    elif sort_by == 'price_high_to_low':
+        products = products.order_by('-price', 'name')
+    else:
+        products = products.order_by('name')
+
+    categories = Category.objects.all().order_by('name')
+    context = {
+        'products': products,
+        'categories': categories,
+        'active_category': category_id,
+        'query': query,
+        'sort_by': sort_by,
+    }
     return render(request, 'allproducts.html', context)
 
 
-from .forms import UserRegisterForm
-from django.contrib import messages
-from django.shortcuts import render,redirect
+def product_detail(request, product_id):
+    product = get_object_or_404(ShopProduct, id=product_id)
+    return render(request, 'product_detail.html', {'product': product})
+
 
 def Register(request):
     if request.method == 'POST':
@@ -37,8 +70,6 @@ def Register(request):
 
     return render(request, 'register.html', {'form': form})
 
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import login as auth_login
 
 def login(request):
     if request.method == 'POST':
@@ -54,15 +85,14 @@ def login(request):
 
     return render(request, 'login.html', {'form': form})
 
-from django.contrib.auth import logout as auth_logout
+
 def logout(request):
     auth_logout(request)
     return redirect('login')
 
-from django.contrib.auth.decorators import login_required
+
 @login_required
 def profile(request):
-   # ป้องกัน error สำหรับ User เก่าที่ยังไม่มี profile
-   if not hasattr(request.user, 'profile'):
-       Profile.objects.create(user=request.user)
-   return render(request, 'profile.html')
+    if not hasattr(request.user, 'profile'):
+        Profile.objects.create(user=request.user)
+    return render(request, 'profile.html')
